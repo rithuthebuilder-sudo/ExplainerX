@@ -105,16 +105,29 @@ export default function App() {
   const [activeTab, setActiveTab] = useState("explanation");
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
+    // 1. Set up the auth state listener
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
       setAuthReady(true);
-      if (user) setShowLanding(false);
+      if (currentUser) {
+        setShowLanding(false);
+      }
     });
 
-    // Handle redirect result
-    getRedirectResult(auth).catch((error) => {
-      console.error("Redirect login error:", error);
-    });
+    // 2. Handle the redirect result explicitly
+    const handleRedirect = async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        if (result?.user) {
+          setUser(result.user);
+          setShowLanding(false);
+        }
+      } catch (error) {
+        console.error("Redirect login error:", error);
+      }
+    };
+
+    handleRedirect();
 
     return () => unsubscribe();
   }, []);
@@ -272,7 +285,16 @@ export default function App() {
     return [...result.quiz, ...extraQuestions];
   }, [result, extraQuestions]);
 
-  if (authReady && showLanding && !user) {
+  if (!authReady) {
+    return (
+      <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-center space-y-4">
+        <Loader2 className="w-12 h-12 text-brand-500 animate-spin" />
+        <p className="text-slate-500 font-bold animate-pulse tracking-widest uppercase text-[10px]">Initializing ExplainerX...</p>
+      </div>
+    );
+  }
+
+  if (!user && showLanding) {
     return <LandingPage onGetStarted={handleLogin} onTryDemo={() => setShowLanding(false)} />;
   }
 
