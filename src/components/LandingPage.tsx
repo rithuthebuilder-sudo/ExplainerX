@@ -17,9 +17,10 @@ import { Button } from "@/components/ui/button";
 interface LandingPageProps {
   onGetStarted: () => void;
   onTryDemo: () => void;
+  isLoggingIn?: boolean;
 }
 
-export default function LandingPage({ onGetStarted, onTryDemo }: LandingPageProps) {
+export default function LandingPage({ onGetStarted, onTryDemo, isLoggingIn }: LandingPageProps) {
   return (
     <div className="min-h-screen bg-[#020617] text-white font-sans selection:bg-brand-500/30 overflow-x-hidden">
       {/* Background Atmosphere */}
@@ -39,9 +40,19 @@ export default function LandingPage({ onGetStarted, onTryDemo }: LandingPageProp
           <span className="text-2xl font-extrabold tracking-tight">Explainer<span className="text-brand-400">X</span></span>
         </div>
         <div className="flex items-center gap-6">
-          <button onClick={onGetStarted} className="text-sm font-semibold text-slate-400 hover:text-white transition-colors">Sign In</button>
-          <Button onClick={onGetStarted} className="bg-white text-black hover:bg-slate-200 rounded-full px-6 font-bold shadow-[0_0_20px_rgba(255,255,255,0.2)]">
-            Get Started
+          <button 
+            onClick={onGetStarted} 
+            disabled={isLoggingIn}
+            className="text-sm font-semibold text-slate-400 hover:text-white transition-colors disabled:opacity-50"
+          >
+            {isLoggingIn ? "Signing in..." : "Sign In"}
+          </button>
+          <Button 
+            onClick={onGetStarted} 
+            disabled={isLoggingIn}
+            className="bg-white text-black hover:bg-slate-200 rounded-full px-6 font-bold shadow-[0_0_20px_rgba(255,255,255,0.2)] disabled:opacity-50"
+          >
+            {isLoggingIn ? "Please wait..." : "Get Started"}
           </Button>
         </div>
       </nav>
@@ -70,9 +81,14 @@ export default function LandingPage({ onGetStarted, onTryDemo }: LandingPageProp
           </p>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-            <Button size="lg" onClick={onGetStarted} className="bg-brand-600 hover:bg-brand-700 h-16 px-10 text-xl font-bold rounded-2xl shadow-[0_0_30px_rgba(55,88,255,0.3)] group">
-              Start Learning Now
-              <ArrowRight className="ml-2 w-6 h-6 group-hover:translate-x-1 transition-transform" />
+            <Button 
+              size="lg" 
+              onClick={onGetStarted} 
+              disabled={isLoggingIn}
+              className="bg-brand-600 hover:bg-brand-700 h-16 px-10 text-xl font-bold rounded-2xl shadow-[0_0_30px_rgba(55,88,255,0.3)] group disabled:opacity-50"
+            >
+              {isLoggingIn ? "Authenticating..." : "Start Learning Now"}
+              {!isLoggingIn && <ArrowRight className="ml-2 w-6 h-6 group-hover:translate-x-1 transition-transform" />}
             </Button>
             <Button size="lg" variant="ghost" onClick={onTryDemo} className="h-16 px-10 text-xl font-bold text-white hover:bg-white/5 rounded-2xl border border-white/10">
               <Play className="mr-3 w-5 h-5 fill-white" />
@@ -203,8 +219,13 @@ export default function LandingPage({ onGetStarted, onTryDemo }: LandingPageProp
               <p className="text-brand-100 text-xl mb-12 max-w-xl mx-auto leading-relaxed">
                 Join the learning revolution today. It's free to get started and takes less than a minute.
               </p>
-              <Button size="lg" onClick={onGetStarted} className="bg-white text-brand-600 hover:bg-slate-100 h-20 px-12 text-2xl font-black rounded-3xl shadow-2xl transition-transform hover:scale-105 active:scale-95">
-                Get Started Now
+              <Button 
+                size="lg" 
+                onClick={onGetStarted} 
+                disabled={isLoggingIn}
+                className="bg-white text-brand-600 hover:bg-slate-100 h-20 px-12 text-2xl font-black rounded-3xl shadow-2xl transition-transform hover:scale-105 active:scale-95 disabled:opacity-50"
+              >
+                {isLoggingIn ? "Signing you in..." : "Get Started Now"}
               </Button>
             </div>
           </div>

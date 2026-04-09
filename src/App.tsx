@@ -38,8 +38,7 @@ import {
 } from "@/src/services/geminiService";
 import { auth, db, handleFirestoreError, OperationType } from "@/src/firebase";
 import { 
-  signInWithRedirect,
-  getRedirectResult,
+  signInWithPopup,
   GoogleAuthProvider, 
   onAuthStateChanged, 
   signOut,
@@ -103,31 +102,17 @@ export default function App() {
   const [savedExplanations, setSavedExplanations] = useState<SavedExplanation[]>([]);
   const [saveLoading, setSaveLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("explanation");
+  const [loginLoading, setLoginLoading] = useState(false);
 
   useEffect(() => {
-    // 1. Set up the auth state listener
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      console.log("Auth state changed:", currentUser?.email);
       setUser(currentUser);
       setAuthReady(true);
       if (currentUser) {
         setShowLanding(false);
       }
     });
-
-    // 2. Handle the redirect result explicitly
-    const handleRedirect = async () => {
-      try {
-        const result = await getRedirectResult(auth);
-        if (result?.user) {
-          setUser(result.user);
-          setShowLanding(false);
-        }
-      } catch (error) {
-        console.error("Redirect login error:", error);
-      }
-    };
-
-    handleRedirect();
 
     return () => unsubscribe();
   }, []);
@@ -156,10 +141,23 @@ export default function App() {
 
   const handleLogin = async () => {
     const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+    
+    setLoginLoading(true);
     try {
-      await signInWithRedirect(auth, provider);
-    } catch (error) {
+      const result = await signInWithPopup(auth, provider);
+      if (result.user) {
+        setUser(result.user);
+        setShowLanding(false);
+      }
+    } catch (error: any) {
       console.error("Login error:", error);
+      // Don't alert if the user just closed the popup
+      if (error.code !== 'auth/popup-closed-by-user') {
+        alert(`Login failed: ${error.message}. Ensure your Vercel domain is in Firebase Authorized Domains.`);
+      }
+    } finally {
+      setLoginLoading(false);
     }
   };
 
@@ -295,7 +293,13 @@ export default function App() {
   }
 
   if (!user && showLanding) {
-    return <LandingPage onGetStarted={handleLogin} onTryDemo={() => setShowLanding(false)} />;
+    return (
+      <LandingPage 
+        onGetStarted={handleLogin} 
+        onTryDemo={() => setShowLanding(false)} 
+        isLoggingIn={loginLoading}
+      />
+    );
   }
 
   return (
