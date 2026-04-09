@@ -1,0 +1,42 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "A user of the application.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "The unique ID of the user." },
+        "email": { "type": "string", "description": "The email address of the user." },
+        "displayName": { "type": "string", "description": "The display name of the user." },
+        "photoURL": { "type": "string", "description": "The photo URL of the user." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "When the user was created." }
+      },
+      "required": ["uid", "email"]
+    },
+    "Explanation": {
+      "title": "Explanation",
+      "description": "A generated explanation saved by a user.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "The unique ID of the explanation." },
+        "userId": { "type": "string", "description": "The ID of the user who saved the explanation." },
+        "subject": { "type": "string", "description": "The subject of the explanation." },
+        "topic": { "type": "string", "description": "The topic of the explanation." },
+        "level": { "type": "string", "description": "The learning level." },
+        "content": { "type": "object", "description": "The full explanation content (ExplanationResponse)." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "When the explanation was saved." }
+      },
+      "required": ["userId", "subject", "topic", "level", "content", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profile documents."
+    },
+    "/users/{userId}/savedExplanations/{explanationId}": {
+      "schema": "Explanation",
+      "description": "Explanations saved by a specific user."
+    }
+  }
+}

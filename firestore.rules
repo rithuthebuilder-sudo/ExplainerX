@@ -1,0 +1,75 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: /users/{userId}
+    // Fields:
+    //   - uid: string (required)
+    //   - email: string (required)
+    //   - displayName: string
+    //   - photoURL: string
+    //   - createdAt: timestamp
+    //
+    // Collection: /users/{userId}/savedExplanations/{explanationId}
+    // Fields:
+    //   - id: string
+    //   - userId: string (required)
+    //   - subject: string (required)
+    //   - topic: string (required)
+    //   - level: string (required)
+    //   - content: map (required)
+    //   - createdAt: timestamp (required)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'email']) &&
+             data.uid == request.auth.uid &&
+             data.email is string &&
+             data.email.size() < 255;
+    }
+    
+    function isValidExplanation(data) {
+      return data.keys().hasAll(['userId', 'subject', 'topic', 'level', 'content', 'createdAt']) &&
+             data.userId == request.auth.uid &&
+             data.subject is string && data.subject.size() < 100 &&
+             data.topic is string && data.topic.size() < 200 &&
+             data.level is string &&
+             data.content is map &&
+             data.createdAt is timestamp;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUser(request.resource.data);
+      allow update: if isOwner(userId) && isValidUser(request.resource.data);
+    }
+    
+    match /users/{userId}/savedExplanations/{explanationId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidExplanation(request.resource.data);
+      allow update: if isOwner(userId) && isValidExplanation(request.resource.data);
+      allow delete: if isOwner(userId);
+    }
+  }
+}

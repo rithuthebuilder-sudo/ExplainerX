@@ -1,11 +1,35 @@
-<div align="center">
+# ExplainerX
 
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+An AI-powered learning explainer tool built with React, Vite, and Gemini AI.
 
-  <h1>Built with AI Studio</h2>
+## Deployment on Vercel
 
-  <p>The fastest path from prompt to production with Gemini.</p>
+This project is configured for easy deployment on Vercel.
 
-  <a href="https://aistudio.google.com/apps">Start building</a>
+### Steps to Deploy
 
-</div>
+1.  **Push to GitHub/GitLab/Bitbucket:** Ensure your code is in a repository.
+2.  **Import to Vercel:** Go to [Vercel](https://vercel.com) and import your repository.
+3.  **Configure Environment Variables:**
+    *   In the Vercel project settings, go to **Environment Variables**.
+    *   Add `GEMINI_API_KEY` with your Google AI Studio API key.
+4.  **Deploy:** Vercel will automatically detect the Vite framework and deploy your app.
+
+### Configuration Details
+
+*   **Framework Preset:** Vite
+*   **Build Command:** `npm run build`
+*   **Output Directory:** `dist`
+*   **SPA Routing:** Handled by `vercel.json` to ensure all routes serve `index.html`.
+
+## Local Development
+
+1.  Install dependencies:
+    ```bash
+    npm install
+    ```
+2.  Set up your `.env` file with `GEMINI_API_KEY`.
+3.  Start the development server:
+    ```bash
+    npm run dev
+    ```
