@@ -1,10 +1,23 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
-import firebaseConfig from '@/firebase-applet-config.json';
+import firebaseConfigJson from '@/firebase-applet-config.json';
+
+// Use environment variables if available (Vercel), otherwise fallback to the provided manual config
+const firebaseConfig = {
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyAoDlv-LnutNUpZTDLT9eTKO92tcO15X3A",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "explainerx-1b705.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "explainerx-1b705",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "explainerx-1b705.firebasestorage.app",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "130917242974",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:130917242974:web:da93b184c1b538b842bccf",
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "G-59STCLXF8T",
+};
+
+const databaseId = import.meta.env.VITE_FIREBASE_DATABASE_ID || "(default)";
 
 const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+export const db = getFirestore(app, databaseId);
 export const auth = getAuth(app);
 
 export enum OperationType {
