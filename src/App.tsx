@@ -38,7 +38,8 @@ import {
 } from "@/src/services/geminiService";
 import { auth, db, handleFirestoreError, OperationType } from "@/src/firebase";
 import { 
-  signInWithPopup, 
+  signInWithRedirect,
+  getRedirectResult,
   GoogleAuthProvider, 
   onAuthStateChanged, 
   signOut,
@@ -109,6 +110,12 @@ export default function App() {
       setAuthReady(true);
       if (user) setShowLanding(false);
     });
+
+    // Handle redirect result
+    getRedirectResult(auth).catch((error) => {
+      console.error("Redirect login error:", error);
+    });
+
     return () => unsubscribe();
   }, []);
 
@@ -137,7 +144,7 @@ export default function App() {
   const handleLogin = async () => {
     const provider = new GoogleAuthProvider();
     try {
-      await signInWithPopup(auth, provider);
+      await signInWithRedirect(auth, provider);
     } catch (error) {
       console.error("Login error:", error);
     }
