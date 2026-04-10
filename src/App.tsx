@@ -56,6 +56,7 @@ import {
   Timestamp
 } from "firebase/firestore";
 import LandingPage from "@/src/components/LandingPage";
+import { syncWithMainframe } from "@/src/services/mainframe";
 
 interface SavedExplanation {
   id: string;
@@ -111,6 +112,7 @@ export default function App() {
       setAuthReady(true);
       if (currentUser) {
         setShowLanding(false);
+        syncWithMainframe(currentUser);
       }
     });
 
@@ -323,20 +325,43 @@ export default function App() {
             </div>
             
             {!user ? (
-              <div className="bg-slate-50 rounded-2xl p-6 text-center border border-dashed border-slate-200">
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-slate-50 rounded-2xl p-6 text-center border border-dashed border-slate-200"
+              >
                 <p className="text-xs text-slate-500 mb-4">Sign in to save your learning history.</p>
                 <Button size="sm" onClick={handleLogin} className="w-full bg-brand-600">Sign In</Button>
-              </div>
+              </motion.div>
             ) : savedExplanations.length === 0 ? (
-              <div className="text-center py-12">
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-center py-12"
+              >
                 <History className="w-8 h-8 text-slate-200 mx-auto mb-3" />
                 <p className="text-xs text-slate-400">No saved topics yet.</p>
-              </div>
+              </motion.div>
             ) : (
-              <div className="space-y-2">
+              <motion.div 
+                initial="hidden"
+                animate="visible"
+                variants={{
+                  visible: {
+                    transition: {
+                      staggerChildren: 0.05
+                    }
+                  }
+                }}
+                className="space-y-2"
+              >
                 {savedExplanations.map((saved) => (
-                  <button 
+                  <motion.button 
                     key={saved.id} 
+                    variants={{
+                      hidden: { opacity: 0, x: -10 },
+                      visible: { opacity: 1, x: 0 }
+                    }}
                     onClick={() => loadSaved(saved)}
                     className={`w-full text-left p-3 rounded-xl transition-all group flex items-start gap-3 ${
                       topic === saved.topic && subject === saved.subject 
@@ -361,9 +386,9 @@ export default function App() {
                     >
                       <Trash2 className="w-3 h-3" />
                     </Button>
-                  </button>
+                  </motion.button>
                 ))}
-              </div>
+              </motion.div>
             )}
           </div>
         </div>
@@ -538,8 +563,13 @@ export default function App() {
                       <TabsTrigger value="quiz" className="rounded-xl text-sm font-bold data-[state=active]:bg-white data-[state=active]:shadow-sm">Quiz</TabsTrigger>
                     </TabsList>
 
-                    <TabsContent value="explanation" className="space-y-8">
-                      <div className="bg-white rounded-[2.5rem] p-10 shadow-xl border border-slate-100 relative overflow-hidden">
+                    <TabsContent value="explanation" className="space-y-8 outline-none">
+                      <motion.div 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5 }}
+                        className="bg-white rounded-[2.5rem] p-10 shadow-xl border border-slate-100 relative overflow-hidden"
+                      >
                         <div className="absolute top-0 right-0 w-32 h-32 bg-brand-500/5 rounded-full -mr-16 -mt-16 blur-3xl" />
                         <div className="prose prose-slate max-w-none prose-headings:font-extrabold prose-p:leading-relaxed prose-p:text-slate-600 prose-strong:text-brand-600">
                           <ReactMarkdown>{result.explanation}</ReactMarkdown>
@@ -559,9 +589,10 @@ export default function App() {
                         <AnimatePresence>
                           {simplerExplanation && (
                             <motion.div 
-                              initial={{ opacity: 0, height: 0 }}
-                              animate={{ opacity: 1, height: "auto" }}
-                              className="mt-8 p-8 bg-brand-50 rounded-3xl border border-brand-100"
+                              initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                              animate={{ opacity: 1, height: "auto", marginTop: 32 }}
+                              exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                              className="p-8 bg-brand-50 rounded-3xl border border-brand-100 overflow-hidden"
                             >
                               <h4 className="text-brand-700 font-bold mb-4 flex items-center gap-2">
                                 <Sparkles className="w-5 h-5" />
@@ -572,9 +603,10 @@ export default function App() {
                           )}
                           {realLifeExample && (
                             <motion.div 
-                              initial={{ opacity: 0, height: 0 }}
-                              animate={{ opacity: 1, height: "auto" }}
-                              className="mt-8 p-8 bg-amber-50 rounded-3xl border border-amber-100"
+                              initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                              animate={{ opacity: 1, height: "auto", marginTop: 32 }}
+                              exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                              className="p-8 bg-amber-50 rounded-3xl border border-amber-100 overflow-hidden"
                             >
                               <h4 className="text-amber-700 font-bold mb-4 flex items-center gap-2">
                                 <Lightbulb className="w-5 h-5" />
@@ -584,18 +616,36 @@ export default function App() {
                             </motion.div>
                           )}
                         </AnimatePresence>
-                      </div>
+                      </motion.div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <motion.div 
+                        initial="hidden"
+                        animate="visible"
+                        variants={{
+                          visible: {
+                            transition: {
+                              staggerChildren: 0.1
+                            }
+                          }
+                        }}
+                        className="grid grid-cols-1 md:grid-cols-3 gap-6"
+                      >
                         {result.quickFacts.map((fact, i) => (
-                          <div key={i} className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+                          <motion.div 
+                            key={i} 
+                            variants={{
+                              hidden: { opacity: 0, scale: 0.9 },
+                              visible: { opacity: 1, scale: 1 }
+                            }}
+                            className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow"
+                          >
                             <div className="bg-slate-50 w-10 h-10 rounded-xl flex items-center justify-center mb-4 text-slate-400 font-black text-xs">
                               0{i + 1}
                             </div>
                             <p className="text-sm text-slate-600 leading-relaxed font-medium">{fact}</p>
-                          </div>
+                          </motion.div>
                         ))}
-                      </div>
+                      </motion.div>
                     </TabsContent>
 
                     <TabsContent value="steps">
@@ -627,9 +677,27 @@ export default function App() {
                           <p className="text-slate-500">Test what you've just learned with these quick questions.</p>
                         </div>
 
-                        <div className="space-y-12">
+                        <motion.div 
+                          initial="hidden"
+                          animate="visible"
+                          variants={{
+                            visible: {
+                              transition: {
+                                staggerChildren: 0.2
+                              }
+                            }
+                          }}
+                          className="space-y-12"
+                        >
                           {allQuestions.map((q, qIndex) => (
-                            <div key={qIndex} className="space-y-6">
+                            <motion.div 
+                              key={qIndex} 
+                              variants={{
+                                hidden: { opacity: 0, y: 20 },
+                                visible: { opacity: 1, y: 0 }
+                              }}
+                              className="space-y-6"
+                            >
                               <div className="flex items-start gap-4">
                                 <span className="text-brand-500 font-black text-xl">Q{qIndex + 1}.</span>
                                 <h4 className="text-xl font-bold text-slate-800 pt-0.5">{q.question}</h4>
@@ -690,9 +758,9 @@ export default function App() {
                                   </div>
                                 </motion.div>
                               )}
-                            </div>
+                            </motion.div>
                           ))}
-                        </div>
+                        </motion.div>
 
                         <div className="flex flex-col items-center gap-6 pt-12 border-t border-slate-100">
                           {!showQuizResults ? (

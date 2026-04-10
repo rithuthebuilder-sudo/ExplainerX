@@ -122,64 +122,94 @@ export default function LandingPage({ onGetStarted, onTryDemo, isLoggingIn }: La
           transition={{ duration: 1, delay: 0.4 }}
           className="mt-24 relative w-full max-w-5xl"
         >
-          <div className="absolute -inset-1 bg-gradient-to-r from-brand-500 to-purple-500 rounded-[2.5rem] blur-xl opacity-20" />
-          <div className="relative bg-[#0f172a] rounded-[2.5rem] p-4 shadow-2xl border border-white/10 overflow-hidden">
-            <div className="bg-[#020617] rounded-[1.8rem] overflow-hidden border border-white/5 aspect-[16/9] flex flex-col">
-              <div className="h-12 border-b border-white/5 flex items-center px-6 gap-2">
-                <div className="flex gap-1.5">
-                  <div className="w-2.5 h-2.5 rounded-full bg-white/10" />
-                  <div className="w-2.5 h-2.5 rounded-full bg-white/10" />
-                  <div className="w-2.5 h-2.5 rounded-full bg-white/10" />
-                </div>
-                <div className="mx-auto bg-white/5 px-4 py-1 rounded-full text-[10px] text-slate-500 font-mono">explainer-x.ai/dashboard</div>
-              </div>
-              <div className="flex-1 p-8 flex gap-8">
-                <div className="w-1/3 space-y-4">
-                  <div className="h-8 bg-white/5 rounded-lg w-full" />
-                  <div className="h-32 bg-brand-600/10 rounded-2xl border border-brand-500/20 p-4">
-                    <div className="w-8 h-8 rounded-lg bg-brand-600 mb-3" />
-                    <div className="h-2 bg-brand-400/30 rounded w-full mb-2" />
-                    <div className="h-2 bg-brand-400/30 rounded w-2/3" />
+          <motion.div 
+            animate={{ 
+              y: [0, -15, 0],
+            }}
+            transition={{
+              duration: 6,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+            className="relative"
+          >
+            <div className="absolute -inset-1 bg-gradient-to-r from-brand-500 to-purple-500 rounded-[2.5rem] blur-xl opacity-20" />
+            <div className="relative bg-[#0f172a] rounded-[2.5rem] p-4 shadow-2xl border border-white/10 overflow-hidden">
+              <div className="bg-[#020617] rounded-[1.8rem] overflow-hidden border border-white/5 aspect-[16/9] flex flex-col">
+                <div className="h-12 border-b border-white/5 flex items-center px-6 gap-2">
+                  <div className="flex gap-1.5">
+                    <div className="w-2.5 h-2.5 rounded-full bg-white/10" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-white/10" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-white/10" />
                   </div>
-                  <div className="h-24 bg-white/5 rounded-2xl border border-white/5" />
+                  <div className="mx-auto bg-white/5 px-4 py-1 rounded-full text-[10px] text-slate-500 font-mono">explainer-x.ai/dashboard</div>
                 </div>
-                <div className="flex-1 space-y-6">
-                  <div className="h-12 bg-white/5 rounded-xl w-3/4" />
-                  <div className="space-y-3">
-                    <div className="h-3 bg-white/10 rounded w-full" />
-                    <div className="h-3 bg-white/10 rounded w-full" />
-                    <div className="h-3 bg-white/10 rounded w-5/6" />
-                    <div className="h-3 bg-white/10 rounded w-4/6" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4 pt-4">
-                    <div className="h-24 bg-emerald-500/5 rounded-2xl border border-emerald-500/10 p-4">
-                      <div className="w-6 h-6 rounded-full bg-emerald-500/20 mb-3" />
-                      <div className="h-2 bg-emerald-500/20 rounded w-full" />
+                <div className="flex-1 p-8 flex gap-8">
+                  <div className="w-1/3 space-y-4">
+                    <div className="h-8 bg-white/5 rounded-lg w-full" />
+                    <div className="h-32 bg-brand-600/10 rounded-2xl border border-brand-500/20 p-4">
+                      <div className="w-8 h-8 rounded-lg bg-brand-600 mb-3" />
+                      <div className="h-2 bg-brand-400/30 rounded w-full mb-2" />
+                      <div className="h-2 bg-brand-400/30 rounded w-2/3" />
                     </div>
-                    <div className="h-24 bg-amber-500/5 rounded-2xl border border-amber-500/10 p-4">
-                      <div className="w-6 h-6 rounded-full bg-amber-500/20 mb-3" />
-                      <div className="h-2 bg-amber-500/20 rounded w-full" />
+                    <div className="h-24 bg-white/5 rounded-2xl border border-white/5" />
+                  </div>
+                  <div className="flex-1 space-y-6">
+                    <div className="h-12 bg-white/5 rounded-xl w-3/4" />
+                    <div className="space-y-3">
+                      <div className="h-3 bg-white/10 rounded w-full" />
+                      <div className="h-3 bg-white/10 rounded w-full" />
+                      <div className="h-3 bg-white/10 rounded w-5/6" />
+                      <div className="h-3 bg-white/10 rounded w-4/6" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4 pt-4">
+                      <div className="h-24 bg-emerald-500/5 rounded-2xl border border-emerald-500/10 p-4">
+                        <div className="w-6 h-6 rounded-full bg-emerald-500/20 mb-3" />
+                        <div className="h-2 bg-emerald-500/20 rounded w-full" />
+                      </div>
+                      <div className="h-24 bg-amber-500/5 rounded-2xl border border-amber-500/10 p-4">
+                        <div className="w-6 h-6 rounded-full bg-amber-500/20 mb-3" />
+                        <div className="h-2 bg-amber-500/20 rounded w-full" />
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
         </motion.div>
       </section>
 
       {/* Features Section */}
       <section className="relative z-10 py-40 bg-[#020617]">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="flex flex-col md:flex-row justify-between items-end gap-8 mb-20">
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="flex flex-col md:flex-row justify-between items-end gap-8 mb-20"
+          >
             <div className="max-w-2xl">
               <h2 className="text-5xl font-bold tracking-tight mb-6">Built for the <br /><span className="text-brand-400">modern student.</span></h2>
               <p className="text-xl text-slate-400 leading-relaxed">We've reimagined learning for the digital age. No more boring textbooks, just pure understanding.</p>
             </div>
             <Button variant="link" className="text-brand-400 font-bold text-lg p-0 h-auto">View all features <ArrowRight className="ml-2 w-5 h-5" /></Button>
-          </div>
+          </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <motion.div 
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={{
+              visible: {
+                transition: {
+                  staggerChildren: 0.2
+                }
+              }
+            }}
+            className="grid grid-cols-1 md:grid-cols-3 gap-8"
+          >
             <FeatureCard 
               icon={<Zap className="w-6 h-6 text-brand-400" />}
               title="Instant Clarity"
@@ -195,24 +225,42 @@ export default function LandingPage({ onGetStarted, onTryDemo, isLoggingIn }: La
               title="Knowledge Vault"
               description="Securely save your explanations and build a personal library of everything you've mastered."
             />
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* Stats Section */}
       <section className="relative z-10 py-32 border-y border-white/5">
-        <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-12 text-center">
+        <motion.div 
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={{
+            visible: {
+              transition: {
+                staggerChildren: 0.1
+              }
+            }
+          }}
+          className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-12 text-center"
+        >
           <StatItem value="98%" label="Satisfaction Rate" />
           <StatItem value="2M+" label="Topics Explained" />
           <StatItem value="50+" label="Subjects Covered" />
           <StatItem value="24/7" label="AI Tutor Access" />
-        </div>
+        </motion.div>
       </section>
 
       {/* CTA Section */}
       <section className="relative z-10 py-40">
         <div className="max-w-5xl mx-auto px-6">
-          <div className="relative bg-gradient-to-br from-brand-600 to-indigo-700 rounded-[4rem] p-16 lg:p-24 text-center overflow-hidden shadow-[0_0_100px_rgba(55,88,255,0.3)]">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="relative bg-gradient-to-br from-brand-600 to-indigo-700 rounded-[4rem] p-16 lg:p-24 text-center overflow-hidden shadow-[0_0_100px_rgba(55,88,255,0.3)]"
+          >
             <div className="absolute inset-0 bg-grid opacity-10" />
             <div className="relative z-10">
               <h2 className="text-5xl lg:text-6xl font-extrabold mb-10 leading-tight">Ready to excel?</h2>
@@ -228,7 +276,7 @@ export default function LandingPage({ onGetStarted, onTryDemo, isLoggingIn }: La
                 {isLoggingIn ? "Signing you in..." : "Get Started Now"}
               </Button>
             </div>
-          </div>
+          </motion.div>
         </div>
       </section>
 
@@ -252,21 +300,32 @@ export default function LandingPage({ onGetStarted, onTryDemo, isLoggingIn }: La
 
 function FeatureCard({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) {
   return (
-    <div className="group bg-white/5 p-12 rounded-[3rem] border border-white/10 hover:bg-white/[0.08] hover:border-white/20 transition-all duration-500">
+    <motion.div 
+      variants={{
+        hidden: { opacity: 0, y: 20 },
+        visible: { opacity: 1, y: 0 }
+      }}
+      className="group bg-white/5 p-12 rounded-[3rem] border border-white/10 hover:bg-white/[0.08] hover:border-white/20 transition-all duration-500"
+    >
       <div className="bg-brand-500/10 w-16 h-16 rounded-2xl flex items-center justify-center mb-10 group-hover:scale-110 transition-transform duration-500">
         {icon}
       </div>
       <h3 className="text-2xl font-bold mb-6">{title}</h3>
       <p className="text-slate-400 leading-relaxed text-lg">{description}</p>
-    </div>
+    </motion.div>
   );
 }
 
 function StatItem({ value, label }: { value: string, label: string }) {
   return (
-    <div>
+    <motion.div
+      variants={{
+        hidden: { opacity: 0, scale: 0.8 },
+        visible: { opacity: 1, scale: 1 }
+      }}
+    >
       <div className="text-5xl font-black text-white mb-3">{value}</div>
       <div className="text-sm font-bold uppercase tracking-widest text-slate-500">{label}</div>
-    </div>
+    </motion.div>
   );
 }
