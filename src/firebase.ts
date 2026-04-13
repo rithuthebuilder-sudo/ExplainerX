@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { initializeFirestore } from 'firebase/firestore';
 import firebaseConfigJson from '@/firebase-applet-config.json';
 
 // Use environment variables if available (Vercel), otherwise fallback to the local config file
@@ -17,7 +17,9 @@ const firebaseConfig = {
 const databaseId = import.meta.env.VITE_FIREBASE_DATABASE_ID || firebaseConfigJson.firestoreDatabaseId;
 
 const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app, databaseId);
+export const db = initializeFirestore(app, {
+  experimentalAutoDetectLongPolling: true
+}, databaseId);
 export const auth = getAuth(app);
 
 export enum OperationType {
