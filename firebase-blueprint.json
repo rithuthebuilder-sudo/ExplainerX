@@ -13,9 +13,27 @@
         "createdAt": { "type": "string", "format": "date-time", "description": "When the explanation was saved." }
       },
       "required": ["userId", "subject", "topic", "level", "content", "createdAt"]
+    },
+    "EcosystemUser": {
+      "title": "EcosystemUser",
+      "description": "Central user profile for the StarVortex Ecosystem.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "lastLogin": { "type": "string", "format": "date-time" },
+        "appsUsed": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["uid", "email", "lastLogin", "appsUsed"]
     }
   },
   "firestore": {
+    "/users/{userId}": {
+      "schema": "EcosystemUser",
+      "description": "Central user tracking for the ecosystem."
+    },
     "/users/{userId}/savedExplanations/{explanationId}": {
       "schema": "SavedExplanation",
       "description": "User's collection of saved learning topics."

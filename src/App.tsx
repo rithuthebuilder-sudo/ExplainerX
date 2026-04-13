@@ -57,6 +57,7 @@ import {
 } from "firebase/firestore";
 import LandingPage from "@/src/components/LandingPage";
 import { syncWithMainframe } from "@/src/services/mainframe";
+import { syncEcosystemUser } from "@/src/services/ecosystemService";
 
 interface SavedExplanation {
   id: string;
@@ -113,6 +114,7 @@ export default function App() {
       if (currentUser) {
         setShowLanding(false);
         syncWithMainframe(currentUser);
+        syncEcosystemUser(currentUser, "ExplainerX");
       }
     });
 
