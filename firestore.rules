@@ -1,56 +1,37 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
     // ===============================================================
     // Assumed Data Model
     // ===============================================================
     //
-    // Collection: /users/{userId}
+    // Collection: /users/{userId}/savedExplanations
+    // Document ID: auto-generated
     // Fields:
-    //   - uid: string (required)
-    //   - email: string (required)
-    //   - displayName: string
-    //   - photoURL: string
-    //   - createdAt: timestamp
-    //
-    // Collection: /users/{userId}/savedExplanations/{explanationId}
-    // Fields:
-    //   - id: string
-    //   - userId: string (required)
-    //   - subject: string (required)
-    //   - topic: string (required)
-    //   - level: string (required)
-    //   - content: map (required)
-    //   - createdAt: timestamp (required)
+    //   - subject: string (required) - The subject category
+    //   - topic: string (required) - The topic name
+    //   - level: string (required) - Beginner, Intermediate, Advanced
+    //   - content: map (required) - The Gemini explanation response
+    //   - createdAt: timestamp (required) - Creation time
     //
     // ===============================================================
 
     // ===============================================================
     // Helper Functions
     // ===============================================================
-    
     function isAuthenticated() {
       return request.auth != null;
     }
-    
+
     function isOwner(userId) {
       return isAuthenticated() && request.auth.uid == userId;
     }
-    
-    function isValidUser(data) {
-      return data.keys().hasAll(['uid', 'email']) &&
-             data.uid == request.auth.uid &&
-             data.email is string &&
-             data.email.size() < 255;
-    }
-    
+
     function isValidExplanation(data) {
-      return data.keys().hasAll(['userId', 'subject', 'topic', 'level', 'content', 'createdAt']) &&
-             data.userId == request.auth.uid &&
-             data.subject is string && data.subject.size() < 100 &&
-             data.topic is string && data.topic.size() < 200 &&
-             data.level is string &&
+      return data.keys().hasAll(['subject', 'topic', 'level', 'content', 'createdAt']) &&
+             data.subject is string && data.subject.size() > 0 && data.subject.size() < 100 &&
+             data.topic is string && data.topic.size() > 0 && data.topic.size() < 200 &&
+             data.level in ['Beginner', 'Intermediate', 'Advanced'] &&
              data.content is map &&
              data.createdAt is timestamp;
     }
@@ -59,17 +40,19 @@ service cloud.firestore {
     // Rules
     // ===============================================================
 
-    match /users/{userId} {
-      allow read: if isOwner(userId);
-      allow create: if isOwner(userId) && isValidUser(request.resource.data);
-      allow update: if isOwner(userId) && isValidUser(request.resource.data);
-    }
-    
     match /users/{userId}/savedExplanations/{explanationId} {
       allow read: if isOwner(userId);
       allow create: if isOwner(userId) && isValidExplanation(request.resource.data);
-      allow update: if isOwner(userId) && isValidExplanation(request.resource.data);
       allow delete: if isOwner(userId);
+      
+      // Updates are not typically needed for saved static explanations in this app, 
+      // but we'll allow it if the owner maintains the schema.
+      allow update: if isOwner(userId) && isValidExplanation(request.resource.data);
+    }
+    
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }
