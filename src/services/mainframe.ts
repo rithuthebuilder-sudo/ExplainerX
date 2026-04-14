@@ -32,8 +32,6 @@ export async function syncWithMainframe(user: FirebaseUser) {
       app_source: "ExplainerX",
       last_login: serverTimestamp(),
     }, { merge: true });
-
-    console.log("Successfully synced with StarVortex Mainframe");
   } catch (error) {
     console.error("Failed to sync with StarVortex Mainframe:", error);
   }

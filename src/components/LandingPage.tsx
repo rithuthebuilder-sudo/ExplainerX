@@ -92,7 +92,7 @@ export default function LandingPage({ onGetStarted, onTryDemo, isLoggingIn }: La
             </Button>
             <Button size="lg" variant="ghost" onClick={onTryDemo} className="h-16 px-10 text-xl font-bold text-white hover:bg-white/5 rounded-2xl border border-white/10">
               <Play className="mr-3 w-5 h-5 fill-white" />
-              Watch Demo
+              Quick Preview
             </Button>
           </div>
 
