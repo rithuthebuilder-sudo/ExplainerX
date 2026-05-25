@@ -16,7 +16,7 @@
     },
     "EcosystemUser": {
       "title": "EcosystemUser",
-      "description": "Central user profile for the StarVortex Ecosystem.",
+      "description": "Central user profile for the StarVortex Ecosystem with analytics.",
       "type": "object",
       "properties": {
         "uid": { "type": "string" },
@@ -24,9 +24,36 @@
         "displayName": { "type": "string" },
         "photoURL": { "type": "string" },
         "lastLogin": { "type": "string", "format": "date-time" },
-        "appsUsed": { "type": "array", "items": { "type": "string" } }
+        "appsUsed": { "type": "array", "items": { "type": "string" } },
+        "explanations_created": { "type": "number", "description": "Total number of explanations saved by the user." },
+        "topics_covered": { "type": "array", "items": { "type": "string" }, "description": "List of unique topics the user has explored." },
+        "subjects_explored": { "type": "array", "items": { "type": "string" }, "description": "List of unique subjects the user has explored." },
+        "total_views": { "type": "number", "description": "Total number of explanations generated (viewed) by the user." },
+        "last_topic": { "type": "string", "description": "The most recent topic explored." }
       },
       "required": ["uid", "email", "lastLogin", "appsUsed"]
+    },
+    "EcosystemActivity": {
+      "title": "EcosystemActivity",
+      "description": "Activity broadcasted to the global StarVortex Event Bus.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "action": { "type": "string", "description": "Action description, e.g., EXPLAINERX: Decoded Photosynthesis" },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "xpAwarded": { "type": "number" },
+            "skillKey": { "type": "string" },
+            "appName": { "type": "string" },
+            "timestamp": { "type": "string", "format": "date-time" },
+            "topic": { "type": "string" },
+            "subject": { "type": "string" }
+          },
+          "required": ["xpAwarded", "skillKey", "appName", "timestamp"]
+        }
+      },
+      "required": ["userId", "action", "metadata"]
     }
   },
   "firestore": {
@@ -37,6 +64,10 @@
     "/users/{userId}/savedExplanations/{explanationId}": {
       "schema": "SavedExplanation",
       "description": "User's collection of saved learning topics."
+    },
+    "/users/{userId}/activities/{activityId}": {
+      "schema": "EcosystemActivity",
+      "description": "Global user activity stream for XP/analytics."
     }
   }
 }

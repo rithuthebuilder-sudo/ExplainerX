@@ -53,6 +53,14 @@ service cloud.firestore {
       // but we'll allow it if the owner maintains the schema.
       allow update: if isOwner(userId) && isValidExplanation(request.resource.data);
     }
+
+    match /users/{userId}/activities/{activityId} {
+      allow read, create: if isOwner(userId);
+    }
+
+    match /rituals/{userId} {
+      allow read: if isOwner(userId);
+    }
     
     // Default deny
     match /{document=**} {

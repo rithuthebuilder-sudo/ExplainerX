@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { 
   BookOpen, 
   Search, 
@@ -16,8 +16,14 @@ import {
   LogOut,
   LogIn,
   Trash2,
-  Bookmark
+  Bookmark,
+  Download,
+  Zap,
+  Flame,
+  Shield,
+  Cpu
 } from "lucide-react";
+import { toPng } from "html-to-image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -57,7 +63,7 @@ import {
 } from "firebase/firestore";
 import LandingPage from "@/src/components/LandingPage";
 import { syncWithMainframe } from "@/src/services/mainframe";
-import { syncEcosystemUser } from "@/src/services/ecosystemService";
+import { syncEcosystemUser, trackActivity, fetchEcosystemStats, EcosystemStats } from "@/src/services/ecosystemService";
 
 interface SavedExplanation {
   id: string;
@@ -105,6 +111,10 @@ export default function App() {
   const [saveLoading, setSaveLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("explanation");
   const [loginLoading, setLoginLoading] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const [ecosystemStats, setEcosystemStats] = useState<EcosystemStats | null>(null);
+  const [lastBroadcast, setLastBroadcast] = useState<any | null>(null);
+  const explanationRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -119,6 +129,14 @@ export default function App() {
 
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      fetchEcosystemStats(user.uid).then(setEcosystemStats);
+    } else {
+      setEcosystemStats(null);
+    }
+  }, [user]);
 
   useEffect(() => {
     if (!user) {
@@ -186,6 +204,17 @@ export default function App() {
         content: result,
         createdAt: serverTimestamp()
       });
+      if (user) {
+        trackActivity(user, 'save', topic, subject).then((broadcastRes) => {
+          if (broadcastRes) {
+            setLastBroadcast(broadcastRes);
+            fetchEcosystemStats(user.uid).then(setEcosystemStats);
+            
+            // Clear announcement toast after a few seconds
+            setTimeout(() => setLastBroadcast(null), 8000);
+          }
+        });
+      }
     } catch (error) {
       handleFirestoreError(error, OperationType.CREATE, path);
     } finally {
@@ -231,6 +260,17 @@ export default function App() {
     try {
       const data = await generateExplanation(subject, topic, level);
       setResult(data);
+      if (user) {
+        trackActivity(user, 'view', topic, subject).then((broadcastRes) => {
+          if (broadcastRes) {
+            setLastBroadcast(broadcastRes);
+            fetchEcosystemStats(user.uid).then(setEcosystemStats);
+            
+            // Clear announcement toast after a few seconds
+            setTimeout(() => setLastBroadcast(null), 8000);
+          }
+        });
+      }
     } catch (error) {
       console.error("Error generating explanation:", error);
     } finally {
@@ -279,6 +319,40 @@ export default function App() {
 
   const handleQuizAnswer = (index: number, answer: string) => {
     setQuizAnswers(prev => ({ ...prev, [index]: answer }));
+  };
+
+  const handleDownloadImage = async () => {
+    if (explanationRef.current === null) return;
+    setDownloading(true);
+    try {
+      // Temporarily show elements for download
+      const showOnDownload = explanationRef.current.querySelectorAll('.show-on-download');
+      showOnDownload.forEach(el => (el as HTMLElement).style.display = 'block');
+
+      const dataUrl = await toPng(explanationRef.current, { 
+        cacheBust: true, 
+        backgroundColor: '#fafafa',
+        filter: (node) => {
+          const el = node as HTMLElement;
+          return !el.classList?.contains('no-download');
+        },
+        style: {
+          padding: '40px',
+        }
+      });
+      
+      // Hide them back
+      showOnDownload.forEach(el => (el as HTMLElement).style.display = '');
+
+      const link = document.createElement('a');
+      link.download = `explainerx-${topic.toLowerCase().replace(/\s+/g, '-')}.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch (err) {
+      console.error('Download failed:', err);
+    } finally {
+      setDownloading(false);
+    }
   };
 
   const allQuestions = useMemo(() => {
@@ -392,6 +466,68 @@ export default function App() {
               </motion.div>
             )}
           </div>
+
+          {user && (
+            <div className="border-t border-slate-100 pt-6 mt-6 space-y-4">
+              <div className="flex items-center justify-between px-2">
+                <h3 className="text-xs font-bold uppercase tracking-widest text-[#2237ff] flex items-center gap-1.5 font-mono">
+                  <Cpu className="w-3.5 h-3.5 animate-pulse" />
+                  Neural Grid Node
+                </h3>
+                <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-600 text-[9px] font-mono px-1.5 py-0">CONNECTED</Badge>
+              </div>
+
+              <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 space-y-3">
+                {/* Clearday Energy */}
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-slate-400 flex items-center gap-1.5">
+                    <Zap className={`w-3.5 h-3.5 ${ecosystemStats?.cleardayEnergy === 'Low' ? 'text-amber-500' : 'text-emerald-500'}`} />
+                    Clearday Energy:
+                  </span>
+                  <span className={`font-bold ${ecosystemStats?.cleardayEnergy === 'Low' ? 'text-amber-600' : 'text-emerald-600'}`}>
+                    {ecosystemStats?.cleardayEnergy || 'Normal'}
+                  </span>
+                </div>
+
+                {ecosystemStats?.cleardayEnergy === 'Low' && (
+                  <div className="text-[10px] bg-amber-50 border border-amber-100 text-amber-700 p-2.5 rounded-xl leading-relaxed flex items-start gap-1">
+                    <span>😴</span>
+                    <span>Rest Mode active: 0.5x XP applied to all actions.</span>
+                  </div>
+                )}
+
+                {/* GrindOS Streak */}
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-slate-400 flex items-center gap-1.5">
+                    <Flame className="w-3.5 h-3.5 text-rose-500" />
+                    GrindOS Streak:
+                  </span>
+                  <span className="font-bold text-slate-700">
+                    {ecosystemStats?.streakCount !== undefined ? `${ecosystemStats.streakCount} Days` : '1 Day'}
+                  </span>
+                </div>
+
+                {/* GrindOS Discipline */}
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-slate-400 flex items-center gap-1.5">
+                    <Shield className="w-3.5 h-3.5 text-blue-500" />
+                    Discipline Level:
+                  </span>
+                  <span className="font-bold text-slate-700">
+                    Lvl {ecosystemStats?.disciplineLevel || 1}
+                  </span>
+                </div>
+
+                {/* XP Multiplier */}
+                <div className="flex items-center justify-between text-xs border-t border-slate-200/60 pt-2 mt-1 font-mono">
+                  <span className="text-slate-400">XP Multiplier:</span>
+                  <span className="font-bold text-[#2237ff]">
+                    {ecosystemStats?.xpMultiplier !== undefined ? `${ecosystemStats.xpMultiplier}x` : '1.0x'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {user && (
@@ -544,17 +680,29 @@ export default function App() {
                       </div>
                     </div>
                     
-                    {user && (
+                    <div className="flex flex-wrap gap-3">
                       <Button 
-                        variant={savedExplanations.some(s => s.topic === topic && s.subject === subject) ? "secondary" : "default"}
-                        onClick={handleSave} 
-                        disabled={saveLoading || savedExplanations.some(s => s.topic === topic && s.subject === subject)}
-                        className="rounded-2xl h-12 px-6 font-bold"
+                        variant="outline"
+                        onClick={handleDownloadImage}
+                        disabled={downloading}
+                        className="rounded-2xl h-12 px-6 font-bold border-slate-200"
                       >
-                        {saveLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Bookmark className={`w-4 h-4 mr-2 ${savedExplanations.some(s => s.topic === topic && s.subject === subject) ? "fill-current" : ""}`} />}
-                        {savedExplanations.some(s => s.topic === topic && s.subject === subject) ? "Saved to History" : "Save Explanation"}
+                        {downloading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Download className="w-4 h-4 mr-2" />}
+                        Download PNG
                       </Button>
-                    )}
+
+                      {user && (
+                        <Button 
+                          variant={savedExplanations.some(s => s.topic === topic && s.subject === subject) ? "secondary" : "default"}
+                          onClick={handleSave} 
+                          disabled={saveLoading || savedExplanations.some(s => s.topic === topic && s.subject === subject)}
+                          className="rounded-2xl h-12 px-6 font-bold"
+                        >
+                          {saveLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Bookmark className={`w-4 h-4 mr-2 ${savedExplanations.some(s => s.topic === topic && s.subject === subject) ? "fill-current" : ""}`} />}
+                          {savedExplanations.some(s => s.topic === topic && s.subject === subject) ? "Saved to History" : "Save Explanation"}
+                        </Button>
+                      )}
+                    </div>
                   </div>
 
                   <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -565,88 +713,95 @@ export default function App() {
                     </TabsList>
 
                     <TabsContent value="explanation" className="space-y-8 outline-none">
-                      <motion.div 
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5 }}
-                        className="bg-white rounded-[2.5rem] p-10 shadow-xl border border-slate-100 relative overflow-hidden"
-                      >
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-brand-500/5 rounded-full -mr-16 -mt-16 blur-3xl" />
-                        <div className="prose prose-slate max-w-none prose-headings:font-extrabold prose-p:leading-relaxed prose-p:text-slate-600 prose-strong:text-brand-600">
-                          <ReactMarkdown>{result.explanation}</ReactMarkdown>
-                        </div>
-                        
-                        <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <Button variant="outline" onClick={handleExplainSimpler} disabled={loading} className="h-16 rounded-2xl border-slate-200 hover:bg-brand-50 hover:text-brand-600 hover:border-brand-200 transition-all font-bold">
-                            {loading ? <Loader2 className="w-5 h-5 animate-spin mr-3" /> : <BrainCircuit className="w-5 h-5 mr-3" />}
-                            Explain it Simpler
-                          </Button>
-                          <Button variant="outline" onClick={handleRealLifeExample} disabled={loading} className="h-16 rounded-2xl border-slate-200 hover:bg-amber-50 hover:text-amber-600 hover:border-amber-200 transition-all font-bold">
-                            {loading ? <Loader2 className="w-5 h-5 animate-spin mr-3" /> : <Lightbulb className="w-5 h-5 mr-3" />}
-                            Real Life Example
-                          </Button>
+                      <div ref={explanationRef} className="space-y-8">
+                        <div className="hidden show-on-download mb-8">
+                          <h1 className="text-4xl font-black text-slate-900">{topic}</h1>
+                          <p className="text-slate-500 font-bold uppercase tracking-widest text-xs mt-2">{subject} • {level} Level</p>
                         </div>
 
-                        <AnimatePresence>
-                          {simplerExplanation && (
-                            <motion.div 
-                              initial={{ opacity: 0, height: 0, marginTop: 0 }}
-                              animate={{ opacity: 1, height: "auto", marginTop: 32 }}
-                              exit={{ opacity: 0, height: 0, marginTop: 0 }}
-                              className="p-8 bg-brand-50 rounded-3xl border border-brand-100 overflow-hidden"
-                            >
-                              <h4 className="text-brand-700 font-bold mb-4 flex items-center gap-2">
-                                <Sparkles className="w-5 h-5" />
-                                Simpler Version
-                              </h4>
-                              <p className="text-brand-900/80 leading-relaxed">{simplerExplanation}</p>
-                            </motion.div>
-                          )}
-                          {realLifeExample && (
-                            <motion.div 
-                              initial={{ opacity: 0, height: 0, marginTop: 0 }}
-                              animate={{ opacity: 1, height: "auto", marginTop: 32 }}
-                              exit={{ opacity: 0, height: 0, marginTop: 0 }}
-                              className="p-8 bg-amber-50 rounded-3xl border border-amber-100 overflow-hidden"
-                            >
-                              <h4 className="text-amber-700 font-bold mb-4 flex items-center gap-2">
-                                <Lightbulb className="w-5 h-5" />
-                                Real Life Analogy
-                              </h4>
-                              <p className="text-amber-900/80 leading-relaxed">{realLifeExample}</p>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </motion.div>
+                        <motion.div 
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.5 }}
+                          className="bg-white rounded-[2.5rem] p-10 shadow-xl border border-slate-100 relative overflow-hidden"
+                        >
+                          <div className="absolute top-0 right-0 w-32 h-32 bg-brand-500/5 rounded-full -mr-16 -mt-16 blur-3xl" />
+                          <div className="prose prose-slate max-w-none prose-headings:font-extrabold prose-p:leading-relaxed prose-p:text-slate-600 prose-strong:text-brand-600">
+                            <ReactMarkdown>{result.explanation}</ReactMarkdown>
+                          </div>
+                          
+                          <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-6 no-download">
+                            <Button variant="outline" onClick={handleExplainSimpler} disabled={loading} className="h-16 rounded-2xl border-slate-200 hover:bg-brand-50 hover:text-brand-600 hover:border-brand-200 transition-all font-bold">
+                              {loading ? <Loader2 className="w-5 h-5 animate-spin mr-3" /> : <BrainCircuit className="w-5 h-5 mr-3" />}
+                              Explain it Simpler
+                            </Button>
+                            <Button variant="outline" onClick={handleRealLifeExample} disabled={loading} className="h-16 rounded-2xl border-slate-200 hover:bg-amber-50 hover:text-amber-600 hover:border-amber-200 transition-all font-bold">
+                              {loading ? <Loader2 className="w-5 h-5 animate-spin mr-3" /> : <Lightbulb className="w-5 h-5 mr-3" />}
+                              Real Life Example
+                            </Button>
+                          </div>
 
-                      <motion.div 
-                        initial="hidden"
-                        animate="visible"
-                        variants={{
-                          visible: {
-                            transition: {
-                              staggerChildren: 0.1
+                          <AnimatePresence>
+                            {simplerExplanation && (
+                              <motion.div 
+                                initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                                animate={{ opacity: 1, height: "auto", marginTop: 32 }}
+                                exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                                className="p-8 bg-brand-50 rounded-3xl border border-brand-100 overflow-hidden"
+                              >
+                                <h4 className="text-brand-700 font-bold mb-4 flex items-center gap-2">
+                                  <Sparkles className="w-5 h-5" />
+                                  Simpler Version
+                                </h4>
+                                <p className="text-brand-900/80 leading-relaxed">{simplerExplanation}</p>
+                              </motion.div>
+                            )}
+                            {realLifeExample && (
+                              <motion.div 
+                                initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                                animate={{ opacity: 1, height: "auto", marginTop: 32 }}
+                                exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                                className="p-8 bg-amber-50 rounded-3xl border border-amber-100 overflow-hidden"
+                              >
+                                <h4 className="text-amber-700 font-bold mb-4 flex items-center gap-2">
+                                  <Lightbulb className="w-5 h-5" />
+                                  Real Life Analogy
+                                </h4>
+                                <p className="text-amber-900/80 leading-relaxed">{realLifeExample}</p>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </motion.div>
+
+                        <motion.div 
+                          initial="hidden"
+                          animate="visible"
+                          variants={{
+                            visible: {
+                              transition: {
+                                staggerChildren: 0.1
+                              }
                             }
-                          }
-                        }}
-                        className="grid grid-cols-1 md:grid-cols-3 gap-6"
-                      >
-                        {result.quickFacts.map((fact, i) => (
-                          <motion.div 
-                            key={i} 
-                            variants={{
-                              hidden: { opacity: 0, scale: 0.9 },
-                              visible: { opacity: 1, scale: 1 }
-                            }}
-                            className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow"
-                          >
-                            <div className="bg-slate-50 w-10 h-10 rounded-xl flex items-center justify-center mb-4 text-slate-400 font-black text-xs">
-                              0{i + 1}
-                            </div>
-                            <p className="text-sm text-slate-600 leading-relaxed font-medium">{fact}</p>
-                          </motion.div>
-                        ))}
-                      </motion.div>
+                          }}
+                          className="grid grid-cols-1 md:grid-cols-3 gap-6"
+                        >
+                          {result.quickFacts.map((fact, i) => (
+                            <motion.div 
+                              key={i} 
+                              variants={{
+                                hidden: { opacity: 0, scale: 0.9 },
+                                visible: { opacity: 1, scale: 1 }
+                              }}
+                              className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow"
+                            >
+                              <div className="bg-slate-50 w-10 h-10 rounded-xl flex items-center justify-center mb-4 text-slate-400 font-black text-xs">
+                                0{i + 1}
+                              </div>
+                              <p className="text-sm text-slate-600 leading-relaxed font-medium">{fact}</p>
+                            </motion.div>
+                          ))}
+                        </motion.div>
+                      </div>
                     </TabsContent>
 
                     <TabsContent value="steps">
@@ -822,6 +977,44 @@ export default function App() {
           </div>
         </div>
       </main>
+
+      {/* Ecosystem Event Broadcast Toast Notification */}
+      <AnimatePresence>
+        {lastBroadcast && (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            className="fixed bottom-6 right-6 z-50 bg-[#020617] border border-white/10 text-white rounded-2xl p-4 shadow-xl max-w-sm"
+          >
+            <div className="flex items-start gap-3">
+              <div className="bg-[#2237ff] p-2 rounded-xl text-white">
+                <Cpu className="w-4 h-4 animate-spin" />
+              </div>
+              <div className="flex-1 space-y-1">
+                <div className="flex items-center justify-between">
+                  <p className="text-[10px] font-mono tracking-widest text-[#2237ff] uppercase font-bold">EVENT BUS BROADCAST</p>
+                  <button onClick={() => setLastBroadcast(null)} className="text-slate-400 hover:text-white text-xs">✕</button>
+                </div>
+                <p className="text-xs font-semibold leading-normal text-slate-200">{lastBroadcast.action}</p>
+                <div className="flex items-center gap-2 pt-1">
+                  <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 text-[10px] font-mono font-bold">
+                    +{lastBroadcast.xpAwarded} XP
+                  </span>
+                  <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 text-[10px] font-mono font-bold uppercase font-mono">
+                    {lastBroadcast.skillKey}
+                  </span>
+                  {lastBroadcast.cleardayEnergy === 'Low' && (
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 text-[10px] font-mono">
+                      Rest Mode
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
