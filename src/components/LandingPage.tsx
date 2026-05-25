@@ -45,14 +45,14 @@ export default function LandingPage({ onGetStarted, onTryDemo, isLoggingIn }: La
             disabled={isLoggingIn}
             className="text-sm font-semibold text-slate-400 hover:text-white transition-colors disabled:opacity-50"
           >
-            {isLoggingIn ? "Signing in..." : "Sign In"}
+            {isLoggingIn ? "Verifying Passport..." : "Login with Passport"}
           </button>
           <Button 
             onClick={onGetStarted} 
             disabled={isLoggingIn}
-            className="bg-white text-black hover:bg-slate-200 rounded-full px-6 font-bold shadow-[0_0_20px_rgba(255,255,255,0.2)] disabled:opacity-50"
+            className="bg-indigo-600 border border-indigo-500 hover:bg-indigo-700 text-white rounded-full px-6 font-bold shadow-[0_0_20px_rgba(99,102,241,0.4)] disabled:opacity-50"
           >
-            {isLoggingIn ? "Please wait..." : "Get Started"}
+            {isLoggingIn ? "Accessing Core..." : "Passport Login"}
           </Button>
         </div>
       </nav>
@@ -85,9 +85,9 @@ export default function LandingPage({ onGetStarted, onTryDemo, isLoggingIn }: La
               size="lg" 
               onClick={onGetStarted} 
               disabled={isLoggingIn}
-              className="bg-brand-600 hover:bg-brand-700 h-16 px-10 text-xl font-bold rounded-2xl shadow-[0_0_30px_rgba(55,88,255,0.3)] group disabled:opacity-50"
+              className="bg-indigo-600 border border-indigo-500 hover:bg-indigo-700 h-16 px-10 text-xl font-bold rounded-2xl shadow-[0_0_30px_rgba(99,102,241,0.3)] group disabled:opacity-50"
             >
-              {isLoggingIn ? "Authenticating..." : "Start Learning Now"}
+              {isLoggingIn ? "Verifying Passport Node..." : "Authenticate with Passport"}
               {!isLoggingIn && <ArrowRight className="ml-2 w-6 h-6 group-hover:translate-x-1 transition-transform" />}
             </Button>
             <Button size="lg" variant="ghost" onClick={onTryDemo} className="h-16 px-10 text-xl font-bold text-white hover:bg-white/5 rounded-2xl border border-white/10">
@@ -271,9 +271,9 @@ export default function LandingPage({ onGetStarted, onTryDemo, isLoggingIn }: La
                 size="lg" 
                 onClick={onGetStarted} 
                 disabled={isLoggingIn}
-                className="bg-white text-brand-600 hover:bg-slate-100 h-20 px-12 text-2xl font-black rounded-3xl shadow-2xl transition-transform hover:scale-105 active:scale-95 disabled:opacity-50"
+                className="bg-indigo-600 border border-indigo-500 text-white hover:bg-indigo-700 h-20 px-12 text-2xl font-black rounded-3xl shadow-2xl transition-transform hover:scale-105 active:scale-95 disabled:opacity-50"
               >
-                {isLoggingIn ? "Signing you in..." : "Get Started Now"}
+                {isLoggingIn ? "Verifying Node..." : "Connect StarVortex Passport"}
               </Button>
             </div>
           </motion.div>

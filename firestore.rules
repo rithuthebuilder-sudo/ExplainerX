@@ -58,7 +58,11 @@ service cloud.firestore {
       allow read, create: if isOwner(userId);
     }
 
-    match /rituals/{userId} {
+    match /passports/{userId} {
+      allow read: if isOwner(userId);
+    }
+
+    match /passport/{userId} {
       allow read: if isOwner(userId);
     }
     
