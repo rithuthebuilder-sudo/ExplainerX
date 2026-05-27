@@ -158,12 +158,12 @@ export const trackActivity = async (user: any, type: 'view' | 'save', topic: str
     // Broadcast to event bus!
     let actionDesc = '';
     let baseXp = 50;
-    // Determine FireInk skill Key integration
+    // Determine Passport skill category mapped to action
     let skillKey = 'knowledge';
     const lowerSub = subject.toLowerCase();
     
     if (lowerSub.includes('history') || lowerSub.includes('literature') || lowerSub.includes('geography')) {
-      skillKey = 'lore'; // Lore research converted to Knowledge points for GrindOS/FireInk
+      skillKey = 'lore'; // Lore research mapped to cross-platform Knowledge and Lore attributes
     } else if (lowerSub.includes('physics') || lowerSub.includes('chemistry') || lowerSub.includes('biology')) {
       skillKey = 'nature';
     } else if (lowerSub.includes('computer')) {
