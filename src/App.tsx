@@ -309,9 +309,9 @@ export default function App() {
   const handleLogin = async () => {
     setLoginLoading(true);
     try {
-      const appId = "ExplainerX";
-      const redirectUri = `${window.location.origin}/#/callback`;
-      window.location.href = `https://passport.starvortexai.com/#/passport?client_id=${appId}&redirect_uri=${encodeURIComponent(redirectUri)}`;
+      const clientId = "explainerx";
+      const redirectUri = `${window.location.origin}/callback`;
+      window.location.href = `https://passport.starvortexai.com/passport?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}`;
     } catch (error: any) {
       console.error("Redirection failure:", error);
     } finally {
