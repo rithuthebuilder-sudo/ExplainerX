@@ -146,7 +146,12 @@ export default function App() {
     const handleUrlCallback = async () => {
       const path = window.location.pathname;
       const hash = window.location.hash;
-      const isCallback = path === '/callback' || path.endsWith('/callback') || hash.includes('/callback') || hash.startsWith('#/callback');
+      const isCallback = path === '/passport-login-success' || 
+                         path.endsWith('/passport-login-success') || 
+                         hash.includes('passport-login-success') ||
+                         path === '/callback' || 
+                         path.endsWith('/callback') || 
+                         hash.includes('callback');
 
       if (isCallback) {
         setCallbackChecking(true);
@@ -167,6 +172,8 @@ export default function App() {
 
         const token = getParam('auth_token') || getParam('token');
         const passportId = getParam('passport_id');
+        const rank = getParam('rank');
+        const aura = getParam('aura');
 
         if (!token && !passportId) {
           setCallbackError("Authentication failed: No active passport credentials received from passport.starvortexai.com.");
@@ -179,6 +186,8 @@ export default function App() {
           const { signInWithCustomToken } = await import("firebase/auth");
           
           let loggedUser = null;
+          let decoded = token ? decodeToken(token) : null;
+
           if (token) {
             try {
               const userCredential = await signInWithCustomToken(auth, token);
@@ -191,7 +200,6 @@ export default function App() {
 
           // If standard custom token didn't login, run the elegant StarVortex sandbox bypass
           if (!loggedUser) {
-            const decoded = token ? decodeToken(token) : null;
             const targetUid = passportId || (decoded && (decoded.uid || decoded.sub)) || `SV-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
             const email = (decoded && decoded.email) || `${targetUid}@starvortex.local`;
             const dName = (decoded && (decoded.displayName || decoded.passport_displayName)) || `Vortex Agent ${targetUid.substring(0, 4)}`;
@@ -213,12 +221,36 @@ export default function App() {
               passport_photoURL: pURL,
               hasPassport: true,
               title: (decoded && decoded.title) || 'Initiate Nomad',
-              rank: (decoded && decoded.rank) || 'Tier 1 Alpha',
+              rank: rank || (decoded && decoded.rank) || 'Tier 1 Alpha',
+              aura: aura || (decoded && decoded.aura) || 'Deep Indigo',
               lastLogin: serverTimestamp(),
               lastActive: serverTimestamp()
             }, { merge: true });
 
             setUser(loggedUser);
+          } else {
+            // Write passport details for standard custom token login too
+            const targetUid = passportId || (decoded && (decoded.uid || decoded.sub)) || loggedUser.uid;
+            const email = (decoded && decoded.email) || loggedUser.email || `${targetUid}@starvortex.local`;
+            const dName = (decoded && (decoded.displayName || decoded.passport_displayName)) || loggedUser.displayName || `Vortex Agent ${targetUid.substring(0, 4)}`;
+            const pURL = (decoded && decoded.photoURL) || loggedUser.photoURL || '';
+
+            const { doc, setDoc, serverTimestamp } = await import("firebase/firestore");
+            const userDocRef = doc(db, 'users', loggedUser.uid);
+            await setDoc(userDocRef, {
+              uid: loggedUser.uid,
+              email: email,
+              displayName: dName,
+              photoURL: pURL,
+              passport_displayName: dName,
+              passport_photoURL: pURL,
+              hasPassport: true,
+              title: (decoded && decoded.title) || 'Initiate Nomad',
+              rank: rank || (decoded && decoded.rank) || 'Tier 1 Alpha',
+              aura: aura || (decoded && decoded.aura) || 'Deep Indigo',
+              lastLogin: serverTimestamp(),
+              lastActive: serverTimestamp()
+            }, { merge: true });
           }
 
           if (loggedUser) {
@@ -309,9 +341,7 @@ export default function App() {
   const handleLogin = async () => {
     setLoginLoading(true);
     try {
-      const clientId = "explainerx";
-      const redirectUri = `${window.location.origin}/callback`;
-      window.location.href = `https://passport.starvortexai.com/passport?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}`;
+      window.location.href = "https://passport.starvortexai.com/explainerx-login";
     } catch (error: any) {
       console.error("Redirection failure:", error);
     } finally {
@@ -497,7 +527,14 @@ export default function App() {
     return [...result.quiz, ...extraQuestions];
   }, [result, extraQuestions]);
 
-  if (currentPath === '/callback' || currentPath.endsWith('/callback') || window.location.hash.includes('callback')) {
+  if (
+    currentPath === '/callback' || 
+    currentPath.endsWith('/callback') || 
+    window.location.hash.includes('callback') ||
+    currentPath === '/passport-login-success' || 
+    currentPath.endsWith('/passport-login-success') || 
+    window.location.hash.includes('passport-login-success')
+  ) {
     return (
       <div className="min-h-screen bg-[#020617] text-white flex flex-col items-center justify-center p-6 text-center">
         <div className="max-w-md w-full bg-slate-950/60 border border-white/10 rounded-[2.5rem] p-10 shadow-[0_0_50px_rgba(34,55,255,0.15)] backdrop-blur-xl space-y-8">
@@ -767,6 +804,24 @@ export default function App() {
                     {ecosystemStats?.xpMultiplier !== undefined ? `${ecosystemStats.xpMultiplier}x` : '1.0x'}
                   </span>
                 </div>
+
+                {/* Ecosystem Rank */}
+                {ecosystemStats?.rank && (
+                  <div className="flex items-center justify-between text-xs border-t border-slate-200/60 pt-2 font-mono">
+                    <span className="text-slate-400">Global Rank:</span>
+                    <span className="font-bold text-slate-700">{ecosystemStats.rank}</span>
+                  </div>
+                )}
+
+                {/* Neural Aura */}
+                {ecosystemStats?.aura && (
+                  <div className="flex items-center justify-between text-xs mt-1 font-mono">
+                    <span className="text-slate-400">Neural Aura:</span>
+                    <span className="font-semibold text-indigo-600 bg-indigo-50/70 border border-indigo-100/50 px-1.5 py-0.5 rounded-md">
+                      {ecosystemStats.aura}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           )}

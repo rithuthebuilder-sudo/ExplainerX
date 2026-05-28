@@ -11,6 +11,7 @@ export interface EcosystemStats {
   photoURL?: string;
   title?: string;
   rank?: string;
+  aura?: string;
 }
 
 // Fetch the user's central data & active metrics
@@ -39,6 +40,7 @@ export const fetchEcosystemStats = async (userId: string): Promise<EcosystemStat
       stats.photoURL = userData.photoURL || userData.passport_photoURL || userData.avatar || userData.avatarURL || '';
       stats.title = userData.title || userData.passport_title || userData.passportTitle || 'Ecosystem Novice';
       stats.rank = userData.rank || userData.passport_rank || userData.passportRank || '';
+      stats.aura = userData.aura || userData.passport_aura || userData.passportAura || '';
     }
 
     // Recalibrate/Re-balance Progression: Derive XP multiplier from active engagement elements (discipline, streak)
